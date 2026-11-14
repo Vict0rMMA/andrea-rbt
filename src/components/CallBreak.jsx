@@ -5,7 +5,7 @@ import { Elephant } from './ui.jsx';
 
 // A little surprise from her boyfriend: after a long study session, Mia reminds her to call him.
 // Put his number here (with country code, only digits), e.g. '573001234567'.
-export const BOYFRIEND_PHONE = '';
+export const BOYFRIEND_PHONE = '573022641006';
 const AFTER_MINUTES = 40; // continuous study time before the reminder shows (once a day)
 
 export default function CallBreak() {
@@ -51,7 +51,9 @@ export default function CallBreak() {
     setOpen(false);
   };
 
-  const href = BOYFRIEND_PHONE ? `tel:+${BOYFRIEND_PHONE}` : null;
+  // Opens a WhatsApp chat with him, with a sweet message ready to send.
+  const msg = 'Hola amor 💜 ya llevo un montón estudiando y la elefantica me dijo que te llamara 🐘📞';
+  const href = BOYFRIEND_PHONE ? `https://wa.me/${BOYFRIEND_PHONE}?text=${encodeURIComponent(msg)}` : null;
 
   return (
     <div className="fixed inset-0 z-[70] grid place-items-center bg-slate-900/50 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="Time to call">
@@ -80,7 +82,7 @@ export default function CallBreak() {
         <Elephant size={170} className="relative mx-auto mt-3 animate-float" />
 
         {href ? (
-          <a href={href} onClick={close} className="relative mt-2 flex h-14 items-center justify-center rounded-full bg-gradient-to-r from-rose-500 to-pink-500 text-lg font-bold text-white shadow-lg shadow-rose-500/40 ring-4 ring-cyan-300 transition active:scale-95">
+          <a href={href} target="_blank" rel="noreferrer" onClick={close} className="relative mt-2 flex h-14 items-center justify-center rounded-full bg-gradient-to-r from-rose-500 to-pink-500 text-lg font-bold text-white shadow-lg shadow-rose-500/40 ring-4 ring-cyan-300 transition active:scale-95">
             Llamar al novio ahora 📞✨
           </a>
         ) : (
