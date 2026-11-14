@@ -10,7 +10,9 @@ import { Card, Button, PageTitle, Mia, BackButton, DomainChip, Elephant, Elephan
 // Profile photo: saved on this device (and in her private cloud save), never inside the public app.
 export function Avatar({ size = 64, className }) {
   const { s } = useStore();
-  if (s.photo) return <img src={s.photo} alt={s.name} width={size} height={size} className={cx('shrink-0 rounded-full object-cover ring-2 ring-white shadow-md dark:ring-white/20', className)} style={{ width: size, height: size }} />;
+  const [broken, setBroken] = useState(false);
+  const src = s.photo || (!broken && '/andrea.jpg');
+  if (src) return <img src={src} onError={() => setBroken(true)} alt={s.name} width={size} height={size} className={cx('shrink-0 rounded-full object-cover ring-2 ring-white shadow-md dark:ring-white/20', className)} style={{ width: size, height: size }} />;
   return (
     <span className={cx('grid shrink-0 place-items-center rounded-full bg-gradient-to-br from-brand-600 to-accent font-display font-bold text-white shadow-md', className)} style={{ width: size, height: size, fontSize: size * 0.4 }}>
       {(s.name || 'A')[0].toUpperCase()}
@@ -57,7 +59,7 @@ export function Me() {
       const data = await resizePhoto(f);
       update((n) => void (n.photo = data));
     } catch {
-      /* unsupported image */
+      window.alert('This photo format can\'t be opened here. Try a JPG or PNG photo.');
     }
     e.target.value = '';
   };
