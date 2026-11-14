@@ -1,5 +1,5 @@
 // Andrea RBT service worker: works offline after the first visit.
-const VERSION = 'rbt-v2';
+const VERSION = 'rbt-v3';
 const SHELL = ['/', '/index.html', '/manifest.webmanifest', '/icon-192.png', '/icon-512.png', '/favicon.svg'];
 
 self.addEventListener('install', (e) => {

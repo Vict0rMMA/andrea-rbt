@@ -73,8 +73,16 @@ function fresh(raw) {
   return s;
 }
 
+// Bump this number to give every device a clean start (used once before handing the app to Andrea).
+const FRESH_START = '2026-11-14';
+
 function load() {
   try {
+    if (localStorage.getItem('andrea-rbt-fresh') !== FRESH_START) {
+      localStorage.removeItem(KEY);
+      localStorage.removeItem('andrea-rbt-cloud');
+      localStorage.setItem('andrea-rbt-fresh', FRESH_START);
+    }
     const raw = localStorage.getItem(KEY);
     return fresh(raw ? JSON.parse(raw) : {});
   } catch {
