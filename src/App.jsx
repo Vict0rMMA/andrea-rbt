@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
-import { Home as HomeIcon, BookOpen, PlayCircle, Layers, User, Moon, Sun } from 'lucide-react';
+import { Home as HomeIcon, BookOpen, PlayCircle, Layers, MessageCircle, User, Moon, Sun } from 'lucide-react';
 import { useStore } from './store.jsx';
 import { stopSpeaking } from './lib.js';
 import { BadgeToast, Logo, ElephantParade, Mia, cx } from './components/ui.jsx';
@@ -46,7 +46,8 @@ const TABS = [
   { id: 'home', label: 'Home', Icon: HomeIcon, match: ['home', 'map', 'summary'] },
   { id: 'learn', label: 'Learn', Icon: BookOpen, match: ['learn', 'cheatsheet', 'glossary'] },
   { id: 'watch', label: 'Watch', Icon: PlayCircle, match: ['watch'] },
-  { id: 'practice', label: 'Practice', Icon: Layers, match: ['practice', 'flash', 'quiz', 'games', 'game', 'exam', 'chat'] },
+  { id: 'practice', label: 'Practice', Icon: Layers, match: ['practice', 'flash', 'quiz', 'games', 'game', 'exam'] },
+  { id: 'chat', label: 'Chat', Icon: MessageCircle, match: ['chat'] },
   { id: 'me', label: 'Me', Icon: User, match: ['me', 'notes', 'badges', 'report'] },
 ];
 
@@ -208,7 +209,7 @@ export default function App() {
                 key={id}
                 href={`#/${id}`}
                 aria-current={active === id ? 'page' : undefined}
-                className={cx('flex min-h-[54px] flex-1 flex-col items-center justify-center gap-0.5 rounded-2xl text-[11px] font-semibold transition active:scale-95', active === id ? 'bg-gradient-to-br from-brand-600 to-accent text-white shadow-md' : 'text-slate-500 dark:text-slate-400')}
+                className={cx('flex min-h-[54px] min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-2xl text-[10.5px] font-semibold transition active:scale-95', active === id ? 'bg-gradient-to-br from-brand-600 to-accent text-white shadow-md' : 'text-slate-500 dark:text-slate-400')}
               >
                 <Icon size={21} strokeWidth={active === id ? 2.4 : 2} />
                 {label}

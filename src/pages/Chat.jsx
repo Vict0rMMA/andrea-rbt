@@ -67,7 +67,7 @@ export default function Chat({ query }) {
   return (
     <div className="flex min-h-[calc(100dvh-180px)] flex-col">
       <div className="flex items-center justify-between">
-        <BackButton onClick={() => go('practice')} label="Practice" />
+        <span />
         {chat.length > 0 && (
           <button onClick={() => update((n) => void (n.chat = []))} className="mb-4 inline-flex h-10 items-center gap-1.5 rounded-xl px-3 text-sm font-semibold text-slate-500 hover:bg-black/5 dark:hover:bg-white/10">
             <Trash2 size={16} /> New chat
