@@ -9,17 +9,25 @@ export function keys() {
 }
 
 // Tries each model with each key. Moves on when a model is unavailable, busy or out of quota.
-export async function generate(models, body) {
+export async function generate(models, body, timeoutMs = 45000) {
   const ks = keys();
   if (!ks.length) throw Object.assign(new Error('GEMINI_API_KEY is not set'), { status: 503 });
   let last;
   for (const model of models) {
     for (const key of ks) {
-      const res = await fetch(`${BASE}/${model}:generateContent`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
-        body: JSON.stringify(body),
-      });
+      let res;
+      try {
+        res = await fetch(`${BASE}/${model}:generateContent`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+          body: JSON.stringify(body),
+          signal: AbortSignal.timeout(timeoutMs),
+        });
+      } catch (e) {
+        // Too slow or network hiccup: try the next model.
+        last = Object.assign(new Error(`${model} timeout/network: ${e.message}`), { status: 503 });
+        continue;
+      }
       if (res.ok) return res.json();
       last = Object.assign(new Error(`${model} ${res.status}: ${(await res.text()).slice(0, 300)}`), { status: res.status });
       if (![404, 429, 500, 503].includes(res.status)) throw last;

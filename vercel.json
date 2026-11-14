@@ -4,6 +4,6 @@
   "outputDirectory": "dist",
   "functions": {
     "api/tts.js": { "maxDuration": 60 },
-    "api/ask.js": { "maxDuration": 30 }
+    "api/ask.js": { "maxDuration": 60 }
   }
 }

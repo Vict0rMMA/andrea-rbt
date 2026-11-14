@@ -1,5 +1,5 @@
 // Andrea RBT service worker: works offline after the first visit.
-const VERSION = 'rbt-v4';
+const VERSION = 'rbt-v5';
 const SHELL = ['/', '/index.html', '/manifest.webmanifest', '/icon-192.png', '/icon-512.png', '/favicon.svg'];
 
 self.addEventListener('install', (e) => {
@@ -35,6 +35,9 @@ self.addEventListener('fetch', (e) => {
     );
     return;
   }
+
+  // Version checks (/?v=...) always go to the network.
+  if (url.origin === location.origin && url.search) return;
 
   // App files and Google Fonts: cache first, then update.
   const cacheable = url.origin === location.origin || url.hostname.endsWith('fonts.googleapis.com') || url.hostname.endsWith('fonts.gstatic.com');

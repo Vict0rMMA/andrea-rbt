@@ -3,6 +3,9 @@ import ReactDOM from 'react-dom/client';
 import App from './App.jsx';
 import { StoreProvider } from './store.jsx';
 import './index.css';
+import { startAutoUpdate } from './updater.js';
+
+startAutoUpdate();
 
 // If anything crashes, show a friendly screen with a way out instead of a blank page.
 class SafetyNet extends React.Component {

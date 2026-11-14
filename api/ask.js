@@ -4,7 +4,8 @@ import { LESSONS } from '../src/data/lessons.js';
 import { DOMAIN } from '../src/data/domains.js';
 
 // POST /api/ask  { question, topic?, history? }  ->  { answer }
-const MODELS = ['gemini-3.5-flash', 'gemini-3.8-flash'];
+// Fast models first (about 1-2 s). Checked against the real API on 14-nov-2026.
+const MODELS = ['gemini-3.5-flash-lite', 'gemini-flash-lite-latest', 'gemini-3.1-flash-lite', 'gemini-3.5-flash'];
 
 // Everything Andrea studies in the app, so Mia's answers match her lessons.
 const KNOWLEDGE = [
@@ -33,7 +34,7 @@ const SYSTEM = [
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
-  if (limited(req, 60)) return res.status(429).json({ error: 'Too many questions. Try again later.' });
+  if (limited(req, 200)) return res.status(429).json({ error: 'Too many questions. Try again later.' });
   let body = req.body || {};
   if (typeof body === 'string') {
     try {
@@ -56,7 +57,7 @@ export default async function handler(req, res) {
       systemInstruction: { parts: [{ text: SYSTEM }] },
       contents: [...history, { role: 'user', parts: [{ text: topic ? `We are studying: ${topic}.\n\nMy question: ${question}` : question }] }],
       generationConfig: { temperature: 0.6, maxOutputTokens: 4096 },
-    });
+    }, 15000);
     const answer = (data.candidates?.[0]?.content?.parts || [])
       .map((p) => (p.thought ? '' : p.text || ''))
       .join('')

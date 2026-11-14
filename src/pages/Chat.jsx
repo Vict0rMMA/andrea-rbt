@@ -37,8 +37,17 @@ export default function Chat({ query }) {
     let answer;
     let err = false;
     try {
-      const r = await fetch('/api/ask', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ question, topic, history }) });
-      const j = await r.json().catch(() => ({}));
+      const askOnce = async () => {
+        const r = await fetch('/api/ask', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question, topic, history }),
+          signal: AbortSignal.timeout ? AbortSignal.timeout(55000) : undefined,
+        });
+        return r.json().catch(() => ({}));
+      };
+      let j = await askOnce();
+      if (!j.answer) j = await askOnce(); // one automatic retry
       answer = j.answer;
       if (!answer) {
         err = true;
