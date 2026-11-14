@@ -1,0 +1,84 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    @apply min-h-[100dvh] font-sans text-slate-800 antialiased;
+    background: #FBF7FF;
+    -webkit-tap-highlight-color: transparent;
+  }
+  html.dark body { @apply text-slate-100; background: #120A22; }
+  button, a, [role='button'] { touch-action: manipulation; }
+  input, textarea, select { font-size: 16px; }
+  :focus-visible { outline: 3px solid #A78BFA; outline-offset: 2px; border-radius: 12px; }
+}
+
+@layer components {
+  .glass {
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.85);
+    box-shadow: 0 1px 2px rgba(76, 29, 149, 0.04), 0 12px 32px -12px rgba(76, 29, 149, 0.18);
+    backdrop-filter: blur(18px) saturate(1.4);
+    -webkit-backdrop-filter: blur(18px) saturate(1.4);
+  }
+  html.dark .glass {
+    background: rgba(255, 255, 255, 0.055);
+    border-color: rgba(255, 255, 255, 0.09);
+    box-shadow: 0 12px 32px -12px rgba(0, 0, 0, 0.5);
+  }
+  .glass-strong {
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid rgba(255, 255, 255, 1);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+  html.dark .glass-strong { background: rgba(38, 22, 66, 0.92); border-color: rgba(255, 255, 255, 0.1); }
+  .tap { @apply transition duration-150 active:scale-[.98]; }
+  @media (hover: hover) { .tap:hover { transform: translateY(-2px); } }
+  .label { @apply text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { scrollbar-width: none; }
+}
+
+/* Soft gradient background blobs */
+.bg-blobs { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+.bg-blobs span { position: absolute; border-radius: 9999px; filter: blur(70px); opacity: .55; }
+.bg-blobs span:nth-child(1) { width: 420px; height: 420px; background: #E9D5FF; top: -120px; left: -100px; }
+.bg-blobs span:nth-child(2) { width: 380px; height: 380px; background: #FBCFE8; top: 30%; right: -140px; }
+.bg-blobs span:nth-child(3) { width: 340px; height: 340px; background: #DDD6FE; bottom: -120px; left: 20%; }
+html.dark .bg-blobs span { opacity: .18; }
+html.dark .bg-blobs span:nth-child(1) { background: #7C3AED; }
+html.dark .bg-blobs span:nth-child(2) { background: #C026D3; }
+html.dark .bg-blobs span:nth-child(3) { background: #4C1D95; }
+
+/* Flashcard flip */
+.flip { perspective: 1200px; }
+.flip-inner { position: relative; width: 100%; height: 100%; transition: transform .55s cubic-bezier(.2,.8,.2,1); transform-style: preserve-3d; }
+.flip.flipped .flip-inner { transform: rotateY(180deg); }
+.flip-face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.flip-back { transform: rotateY(180deg); }
+
+.pb-safe { padding-bottom: calc(env(safe-area-inset-bottom) + 6px); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+
+@media print {
+  .no-print, nav, aside { display: none !important; }
+  body { background: #fff !important; }
+  .glass { box-shadow: none; border: 1px solid #ddd; background: #fff; }
+}
+
+/* Tiny pink elephant pattern behind everything */
+.bg-blobs::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: .07;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='%23DB2777'%3E%3Cellipse cx='40' cy='42' rx='14' ry='10'/%3E%3Ccircle cx='27' cy='36' r='9'/%3E%3Cpath d='M20 38c-4 2-6 6-4 10' stroke='%23DB2777' stroke-width='4' fill='none' stroke-linecap='round'/%3E%3Crect x='30' y='46' width='5' height='9' rx='2.5'/%3E%3Crect x='44' y='46' width='5' height='9' rx='2.5'/%3E%3C/g%3E%3Cpath d='M92 92c0-2 3-3 4-1 1-2 4-1 4 1 0 3-4 5-4 5s-4-2-4-5z' fill='%237C3AED'/%3E%3C/svg%3E");
+  background-size: 120px 120px;
+}
+html.dark .bg-blobs::after { opacity: .05; }
