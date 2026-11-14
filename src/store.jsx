@@ -423,6 +423,7 @@ export const useStore = () => useContext(Ctx);
 export function resetAll() {
   try {
     localStorage.removeItem(KEY);
+    localStorage.removeItem('andrea-rbt-cloud');
   } catch {
     /* ignore */
   }

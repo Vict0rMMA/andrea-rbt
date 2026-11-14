@@ -11,18 +11,19 @@ Coach Mia (a pink elephant) explains everything in simple English.
 - **Study plan**: exam countdown, daily plan, focus timer (25/5), weekly report
 - Installable app (PWA), works offline after the first visit
 
-## Settings in Vercel (Environment Variables)
+## Settings
+**Vercel → Settings → Environment Variables**
 | Name | What it is |
 |---|---|
 | `GEMINI_API_KEY` | Google AI Studio key. Gives Mia her natural voice and powers "Ask Mia". Several keys can be separated by commas. |
-| `VITE_SUPABASE_URL` | Supabase project URL (cloud save). |
-| `VITE_SUPABASE_ANON_KEY` | Supabase publishable / anon key (safe to be public; the table is locked). |
 
-Without these the app still works: progress stays on the device and the voice uses the device's English voice.
+Without it the app still works with the device's English voice.
 
-## Supabase setup
-Run `supabase/migration.sql` once in the project's SQL editor. It creates a locked table and two functions
-(`rbt_load`, `rbt_save`) protected by name + PIN.
+## Cloud save (Firebase)
+- Project: `andrea-rbt-2026` (config in `src/cloud.js`; Firebase web config is public by design).
+- Sign-in: name + PIN become a Firebase Email/Password account. **Authentication → Email/Password must be enabled.**
+- Data: one Firestore document per account in `progress/{uid}`. Rules in `firestore.rules`
+  (each account can only read/write its own document). Deploy rules with `firebase deploy --only firestore:rules`.
 
 ## Video library
 Add default videos in `src/data/videos.json`:
