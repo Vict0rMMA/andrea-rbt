@@ -33,14 +33,12 @@
 
 @layer components {
   .glass {
-    background: rgba(255, 255, 255, 0.72);
+    background: rgba(255, 255, 255, 0.86);
     border: 1px solid rgba(255, 255, 255, 0.85);
     box-shadow: 0 1px 2px rgba(76, 29, 149, 0.04), 0 12px 32px -12px rgba(76, 29, 149, 0.18);
-    backdrop-filter: blur(18px) saturate(1.4);
-    -webkit-backdrop-filter: blur(18px) saturate(1.4);
   }
   html.dark .glass {
-    background: rgba(255, 255, 255, 0.055);
+    background: rgba(255, 255, 255, 0.065);
     border-color: rgba(255, 255, 255, 0.09);
     box-shadow: 0 12px 32px -12px rgba(0, 0, 0, 0.5);
   }
@@ -60,7 +58,7 @@
 
 /* Soft gradient background blobs */
 .bg-blobs { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
-.bg-blobs span { position: absolute; border-radius: 9999px; filter: blur(70px); opacity: .55; }
+.bg-blobs span { position: absolute; border-radius: 9999px; opacity: .55; }
 .bg-blobs span:nth-child(1) { width: 420px; height: 420px; background: var(--blob1); top: -120px; left: -100px; }
 .bg-blobs span:nth-child(2) { width: 380px; height: 380px; background: var(--blob2); top: 30%; right: -140px; }
 .bg-blobs span:nth-child(3) { width: 340px; height: 340px; background: var(--blob3); bottom: -120px; left: 20%; }
@@ -115,3 +113,13 @@ html.dark .bg-blobs::after { opacity: .05; }
 .blink { animation: blink 1s ease-in-out infinite; }
 .fade { transition: opacity .5s ease, transform .5s ease; }
 @keyframes grow-x { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+/* Blobs drawn with gradients (much lighter than a blur filter) */
+.bg-blobs span { background-image: radial-gradient(circle at center, currentColor 0%, transparent 70%) !important; background-color: transparent !important; }
+.bg-blobs span:nth-child(1) { color: var(--blob1); }
+.bg-blobs span:nth-child(2) { color: var(--blob2); }
+.bg-blobs span:nth-child(3) { color: var(--blob3); }
+html.dark .bg-blobs span:nth-child(1) { color: rgb(var(--b600)); }
+html.dark .bg-blobs span:nth-child(2) { color: rgb(var(--acc)); }
+html.dark .bg-blobs span:nth-child(3) { color: rgb(var(--b900)); }
+.bg-blobs { contain: strict; }

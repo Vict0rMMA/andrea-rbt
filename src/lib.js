@@ -93,6 +93,23 @@ export const lessonAudioUrl = (id, simple) => `/api/tts?lesson=${encodeURICompon
 export function playLesson(id, simple, fallbackText, opts = {}) {
   stopSpeaking();
   const token = speakToken;
+  const key = `${id}${simple ? '-s' : ''}`;
+
+  // Not generated yet: talk right away with the device's English voice, and prepare
+  // Mia's natural voice in the background so it's instant next time.
+  if (!voiceReady(key)) {
+    warmVoice(id, simple, key);
+    speak(fallbackText, opts.rate || 1, (ok) => {
+      if (ok !== false) return opts.onEnd?.(ok);
+      // No English voice on this device: wait for the natural voice instead.
+      playAudio(true);
+    });
+    opts.onStart?.('device'); // after speak(), so a caller can take over sentence by sentence
+    return null;
+  }
+  return playAudio(false);
+
+  function playAudio(patient) {
   const audio = new Audio(lessonAudioUrl(id, simple));
   currentAudio = audio;
   audio.preload = 'auto';
@@ -103,11 +120,12 @@ export function playLesson(id, simple, fallbackText, opts = {}) {
     fellBack = true;
     audio.pause();
     currentAudio = null;
-    opts.onStart?.('device');
+    if (patient) return opts.onEnd?.(false);
     speak(fallbackText, opts.rate || 1, (ok) => opts.onEnd?.(ok));
+    opts.onStart?.('device');
   };
   let started = false;
-  setTimeout(() => !started && fallback(), 25000);
+  setTimeout(() => !started && fallback(), patient ? 30000 : 5000);
   audio.addEventListener('playing', () => {
     started = true;
     if (token === speakToken) opts.onStart?.('gemini');
@@ -117,6 +135,35 @@ export function playLesson(id, simple, fallbackText, opts = {}) {
   audio.addEventListener('error', fallback);
   audio.play().catch(fallback);
   return audio;
+  }
+}
+
+// Remembers which lessons already have Mia's natural voice ready (cached by the browser and CDN).
+const READY_KEY = 'andrea-rbt-voice';
+const warming = new Set();
+function readyList() {
+  try {
+    return JSON.parse(localStorage.getItem(READY_KEY) || '[]');
+  } catch {
+    return [];
+  }
+}
+export const voiceReady = (key) => readyList().includes(key);
+function warmVoice(id, simple, key) {
+  if (warming.has(key)) return;
+  warming.add(key);
+  fetch(lessonAudioUrl(id, simple))
+    .then((r) => (r.ok && (r.headers.get('content-type') || '').includes('audio') ? r.arrayBuffer() : null))
+    .then((buf) => {
+      if (!buf) return;
+      try {
+        localStorage.setItem(READY_KEY, JSON.stringify([...new Set([...readyList(), key])].slice(-200)));
+      } catch {
+        /* ignore */
+      }
+    })
+    .catch(() => {})
+    .finally(() => warming.delete(key));
 }
 
 // ───────── Spaced repetition (simplified SM-2) ─────────
