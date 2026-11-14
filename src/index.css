@@ -3,13 +3,29 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --b50: 253 244 255; --b300: 240 171 252; --b400: 167 139 250; --b600: 124 58 237; --b700: 109 40 217; --b900: 46 16 101; --acc: 217 70 239;
+    --bg: #FBF7FF; --bg-dark: #120A22; --blob1: #E9D5FF; --blob2: #FBCFE8; --blob3: #DDD6FE;
+  }
+  html[data-skin='sunset'] {
+    --b50: 255 247 237; --b300: 253 186 116; --b400: 251 113 133; --b600: 225 29 72; --b700: 190 18 60; --b900: 76 5 25; --acc: 249 115 22;
+    --bg: #FFF7F3; --bg-dark: #1C0B10; --blob1: #FED7AA; --blob2: #FBCFE8; --blob3: #FECACA;
+  }
+  html[data-skin='ocean'] {
+    --b50: 240 249 255; --b300: 153 246 228; --b400: 56 189 248; --b600: 2 132 199; --b700: 3 105 161; --b900: 8 47 73; --acc: 20 184 166;
+    --bg: #F3FAFF; --bg-dark: #06141F; --blob1: #BAE6FD; --blob2: #A7F3D0; --blob3: #C7D2FE;
+  }
+  html[data-skin='galaxy'] {
+    --b50: 245 243 255; --b300: 249 168 212; --b400: 167 139 250; --b600: 139 92 246; --b700: 124 58 237; --b900: 30 27 75; --acc: 236 72 153;
+    --bg-dark: #0B0820; --blob1: #6366F1; --blob2: #EC4899; --blob3: #7C3AED;
+  }
   html { -webkit-text-size-adjust: 100%; }
   body {
     @apply min-h-[100dvh] font-sans text-slate-800 antialiased;
-    background: #FBF7FF;
+    background: var(--bg);
     -webkit-tap-highlight-color: transparent;
   }
-  html.dark body { @apply text-slate-100; background: #120A22; }
+  html.dark body { @apply text-slate-100; background: var(--bg-dark); }
   button, a, [role='button'] { touch-action: manipulation; }
   input, textarea, select { font-size: 16px; }
   :focus-visible { outline: 3px solid #A78BFA; outline-offset: 2px; border-radius: 12px; }
@@ -45,13 +61,14 @@
 /* Soft gradient background blobs */
 .bg-blobs { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
 .bg-blobs span { position: absolute; border-radius: 9999px; filter: blur(70px); opacity: .55; }
-.bg-blobs span:nth-child(1) { width: 420px; height: 420px; background: #E9D5FF; top: -120px; left: -100px; }
-.bg-blobs span:nth-child(2) { width: 380px; height: 380px; background: #FBCFE8; top: 30%; right: -140px; }
-.bg-blobs span:nth-child(3) { width: 340px; height: 340px; background: #DDD6FE; bottom: -120px; left: 20%; }
+.bg-blobs span:nth-child(1) { width: 420px; height: 420px; background: var(--blob1); top: -120px; left: -100px; }
+.bg-blobs span:nth-child(2) { width: 380px; height: 380px; background: var(--blob2); top: 30%; right: -140px; }
+.bg-blobs span:nth-child(3) { width: 340px; height: 340px; background: var(--blob3); bottom: -120px; left: 20%; }
 html.dark .bg-blobs span { opacity: .18; }
-html.dark .bg-blobs span:nth-child(1) { background: #7C3AED; }
-html.dark .bg-blobs span:nth-child(2) { background: #C026D3; }
-html.dark .bg-blobs span:nth-child(3) { background: #4C1D95; }
+html.dark .bg-blobs span:nth-child(1) { background: rgb(var(--b600)); }
+html.dark .bg-blobs span:nth-child(2) { background: rgb(var(--acc)); }
+html.dark .bg-blobs span:nth-child(3) { background: rgb(var(--b900)); }
+html[data-skin='galaxy'] .bg-blobs span { opacity: .28; }
 
 /* Flashcard flip */
 .flip { perspective: 1200px; }
@@ -82,3 +99,19 @@ html.dark .bg-blobs span:nth-child(3) { background: #4C1D95; }
   background-size: 120px 120px;
 }
 html.dark .bg-blobs::after { opacity: .05; }
+
+/* Fun animations */
+@keyframes shine { 0% { transform: translateX(-120%) rotate(20deg); } 100% { transform: translateX(220%) rotate(20deg); } }
+.shiny { position: relative; overflow: hidden; }
+.shiny::after { content: ''; position: absolute; top: -50%; left: 0; width: 40%; height: 200%; background: linear-gradient(90deg, transparent, rgba(255,255,255,.55), transparent); animation: shine 2.8s ease-in-out infinite; }
+@keyframes wiggle { 0%,100% { transform: rotate(0); } 25% { transform: rotate(-8deg); } 75% { transform: rotate(8deg); } }
+.wiggle { animation: wiggle .6s ease-in-out infinite; }
+@keyframes talk { 0%,100% { transform: scale(1); } 50% { transform: scale(1.06) translateY(-2px); } }
+.talking { animation: talk .45s ease-in-out infinite; }
+@keyframes grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@keyframes drawline { from { stroke-dashoffset: var(--len, 600); } to { stroke-dashoffset: 0; } }
+.draw { stroke-dasharray: var(--len, 600); animation: drawline 1.2s ease-out both; }
+@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: .25; } }
+.blink { animation: blink 1s ease-in-out infinite; }
+.fade { transition: opacity .5s ease, transform .5s ease; }
+@keyframes grow-x { from { transform: scaleX(0); } to { transform: scaleX(1); } }

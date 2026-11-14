@@ -152,14 +152,14 @@ export const CHEATSHEET = [
 ];
 
 export const MOTIVATION = [
-  'Every card you study is one step closer to "RBT" after your name. 💜',
+  'Every card you study is one step closer to "RBT" after your name.',
   'Small steps every day beat cramming. You\'re doing it right.',
   'Mistakes are just data. And you know what we do with data: we learn from it!',
   'You\'re going to be an amazing RBT. Your future clients are lucky.',
   'Consistency is your superpower. Same as extinction: stay the course!',
-  'Proud of you for showing up today. ✨',
+  'Proud of you for showing up today.',
   'Your brain is literally getting reinforced right now. Keep going!',
   'One more quiz? Your future self will thank you.',
-  'Elephants never forget, and with spaced repetition, neither will you! 🐘',
-  'Slow and steady, like a happy little elephant. 🐘💗',
+  'Elephants never forget, and with spaced repetition, neither will you!',
+  'Slow and steady, like a happy little elephant.',
 ];

@@ -1,6 +1,9 @@
 import confetti from 'canvas-confetti';
 
-// ───────── Speech (Web Speech API) ─────────
+// ───────── Voice ─────────
+// Two engines:
+//  1. Gemini voice (natural, via /api/tts) for whole lessons. Cached for a year.
+//  2. The device's own voice, but ONLY an English one (never a Spanish voice reading English).
 export const canSpeak = typeof window !== 'undefined' && 'speechSynthesis' in window;
 let voices = [];
 if (canSpeak) {
@@ -9,41 +12,111 @@ if (canSpeak) {
   window.speechSynthesis.addEventListener?.('voiceschanged', loadVoices);
 }
 
-function pickVoice() {
-  const en = voices.filter((v) => v.lang?.toLowerCase().startsWith('en-us'));
-  const pref = ['Samantha', 'Google US English', 'Microsoft Aria', 'Microsoft Jenny', 'Ava', 'Allison', 'Zira'];
-  for (const p of pref) {
-    const v = en.find((x) => x.name.includes(p));
-    if (v) return v;
-  }
-  return en[0] || voices.find((v) => v.lang?.startsWith('en')) || null;
-}
-
-let speakToken = 0;
-// Speaks sentence by sentence (long single utterances get cut off in some browsers).
-export function speak(text, rate = 1, onEnd) {
-  if (!canSpeak) return;
-  const synth = window.speechSynthesis;
-  synth.cancel();
-  const token = ++speakToken;
-  const parts = (text.replace(/[•→]/g, '. ').match(/[^.!?]+[.!?]*/g) || [text]).map((p) => p.trim()).filter((p) => p.length > 1);
-  const voice = pickVoice();
-  parts.forEach((p, i) => {
-    const u = new SpeechSynthesisUtterance(p);
-    u.lang = 'en-US';
-    u.rate = rate;
-    u.pitch = 1.05;
-    if (voice) u.voice = voice;
-    if (i === parts.length - 1) u.onend = () => token === speakToken && onEnd?.();
-    u.onerror = () => token === speakToken && onEnd?.();
-    synth.speak(u);
+function voicesReady() {
+  if (!canSpeak || voices.length) return Promise.resolve();
+  return new Promise((resolve) => {
+    const t = setTimeout(resolve, 1500);
+    window.speechSynthesis.addEventListener?.('voiceschanged', () => {
+      clearTimeout(t);
+      resolve();
+    });
   });
 }
 
+// Best English voice on this device: natural/neural voices first.
+const RANK = [/natural/i, /google us english/i, /samantha/i, /\b(aria|jenny|ava|emma|michelle|allison|susan|zoe|nicky)\b/i, /google/i];
+export function englishVoice() {
+  const en = voices.filter((v) => /^en[-_]/i.test(v.lang || ''));
+  if (!en.length) return null;
+  const us = en.filter((v) => /^en[-_]us/i.test(v.lang));
+  const pool = us.length ? us : en;
+  for (const r of RANK) {
+    const v = pool.find((x) => r.test(x.name));
+    if (v) return v;
+  }
+  return pool.find((v) => v.localService) || pool[0];
+}
+
+export async function hasEnglishVoice() {
+  await voicesReady();
+  return !!englishVoice();
+}
+
+let speakToken = 0;
+let currentAudio = null;
+
+// Speaks with the device voice, sentence by sentence (long utterances get cut off in some browsers).
+// Returns false if the device has no English voice.
+export async function speak(text, rate = 1, onEnd) {
+  stopSpeaking();
+  const token = speakToken;
+  if (!canSpeak) {
+    onEnd?.(false);
+    return false;
+  }
+  await voicesReady();
+  if (token !== speakToken) return true;
+  const voice = englishVoice();
+  if (!voice) {
+    onEnd?.(false);
+    return false;
+  }
+  const synth = window.speechSynthesis;
+  const parts = (text.replace(/[•→]/g, '. ').match(/[^.!?]+[.!?]*/g) || [text]).map((p) => p.trim()).filter((p) => p.length > 1);
+  parts.forEach((p, i) => {
+    const u = new SpeechSynthesisUtterance(p);
+    u.voice = voice;
+    u.lang = voice.lang;
+    u.rate = rate;
+    if (i === parts.length - 1) u.onend = () => token === speakToken && onEnd?.(true);
+    u.onerror = (e) => token === speakToken && e.error !== 'interrupted' && e.error !== 'canceled' && onEnd?.(true);
+    synth.speak(u);
+  });
+  return true;
+}
+
 export function stopSpeaking() {
-  if (!canSpeak) return;
   speakToken += 1;
-  window.speechSynthesis.cancel();
+  if (canSpeak) window.speechSynthesis.cancel();
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio.src = '';
+    currentAudio = null;
+  }
+}
+
+export const lessonAudioUrl = (id, simple) => `/api/tts?lesson=${encodeURIComponent(id)}${simple ? '&simple=1' : ''}`;
+
+// Plays a whole lesson with the Gemini voice. If that fails (no key, no quota, offline),
+// it falls back to the device's English voice. Must be called from a tap (iPhone rule).
+// opts: { rate, onStart(engine), onEnd(ok), onTime(fraction) }
+export function playLesson(id, simple, fallbackText, opts = {}) {
+  stopSpeaking();
+  const token = speakToken;
+  const audio = new Audio(lessonAudioUrl(id, simple));
+  currentAudio = audio;
+  audio.preload = 'auto';
+  audio.playbackRate = opts.rate || 1;
+  let fellBack = false;
+  const fallback = () => {
+    if (fellBack || token !== speakToken) return;
+    fellBack = true;
+    audio.pause();
+    currentAudio = null;
+    opts.onStart?.('device');
+    speak(fallbackText, opts.rate || 1, (ok) => opts.onEnd?.(ok));
+  };
+  let started = false;
+  setTimeout(() => !started && fallback(), 25000);
+  audio.addEventListener('playing', () => {
+    started = true;
+    if (token === speakToken) opts.onStart?.('gemini');
+  });
+  audio.addEventListener('timeupdate', () => audio.duration && opts.onTime?.(audio.currentTime / audio.duration, audio));
+  audio.addEventListener('ended', () => token === speakToken && opts.onEnd?.(true));
+  audio.addEventListener('error', fallback);
+  audio.play().catch(fallback);
+  return audio;
 }
 
 // ───────── Spaced repetition (simplified SM-2) ─────────
@@ -103,9 +176,9 @@ export function celebrate(big = false) {
 
 export function greeting(name) {
   const h = new Date().getHours();
-  if (h < 12) return `Good morning, ${name} ☀️`;
-  if (h < 18) return `Good afternoon, ${name} 🌤️`;
-  return `Good evening, ${name} 🌙`;
+  if (h < 12) return `Good morning, ${name}`;
+  if (h < 18) return `Good afternoon, ${name}`;
+  return `Good evening, ${name}`;
 }
 
 export const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];

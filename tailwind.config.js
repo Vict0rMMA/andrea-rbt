@@ -9,7 +9,16 @@ export default {
         display: ['Poppins', 'Inter', 'system-ui', 'sans-serif'],
       },
       colors: {
-        brand: { 50: '#FDF4FF', 300: '#F0ABFC', 400: '#A78BFA', 600: '#7C3AED', 700: '#6D28D9', 900: '#2E1065' },
+        // Theme colors come from CSS variables so Andrea can switch themes.
+        brand: {
+          50: 'rgb(var(--b50) / <alpha-value>)',
+          300: 'rgb(var(--b300) / <alpha-value>)',
+          400: 'rgb(var(--b400) / <alpha-value>)',
+          600: 'rgb(var(--b600) / <alpha-value>)',
+          700: 'rgb(var(--b700) / <alpha-value>)',
+          900: 'rgb(var(--b900) / <alpha-value>)',
+        },
+        accent: 'rgb(var(--acc) / <alpha-value>)',
       },
       keyframes: {
         pop: { '0%': { transform: 'scale(.92)', opacity: 0 }, '100%': { transform: 'scale(1)', opacity: 1 } },

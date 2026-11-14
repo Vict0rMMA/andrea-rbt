@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Timer, Flag, ChevronLeft, ChevronRight, Grid3x3, Play, Trophy, Clock, X } from 'lucide-react';
-import { useStore, recordAnswer } from '../store.jsx';
+import { useStore, recordAnswer, addXP, markStudy } from '../store.jsx';
+import { XP } from '../fun.js';
 import { DOMAINS, DOMAIN, EXAM_PLAN, EXAM_MINUTES, PASS_TARGET } from '../data/domains.js';
 import { QUESTION, questionsByDomain } from '../data/content.js';
 import { go, shuffle, celebrate } from '../lib.js';
-import { Card, Button, PageTitle, Ring, Bar, MiaSays, BackButton, DomainChip, Elephant, cx } from '../components/ui.jsx';
+import { Card, Button, PageTitle, Ring, Bar, MiaSays, BackButton, DomainChip, Elephant, Modal, cx } from '../components/ui.jsx';
 import { OptionList } from './Quiz.jsx';
 
 function buildExam() {
@@ -32,7 +33,7 @@ export function Exam() {
     <div className="space-y-5">
       <PageTitle title="Mock Exam" sub="Just like the real 2026 BACB RBT exam" />
       <Card className="overflow-hidden !p-0">
-        <div className="bg-gradient-to-br from-brand-600 via-violet-500 to-fuchsia-400 p-6 text-white">
+        <div className="bg-gradient-to-br from-brand-600 via-violet-500 to-accent p-6 text-white">
           <div className="flex items-start justify-between"><Trophy size={32} className="mb-3" /><Elephant size={70} balloon className="-mt-2 animate-float" /></div>
           <p className="font-display text-2xl font-bold">Full practice exam</p>
           <div className="mt-3 flex flex-wrap gap-2 text-sm">
@@ -46,7 +47,7 @@ export function Exam() {
           {DOMAINS.map((d) => (
             <div key={d.id} className="flex items-center justify-between text-sm">
               <span className="text-slate-700 dark:text-slate-200">
-                {d.emoji} {d.id}. {d.name}
+                {d.id}. {d.name}
               </span>
               <span className="font-semibold text-slate-500 dark:text-slate-400">
                 {EXAM_PLAN[d.id]} Q · {d.weight}%
@@ -67,7 +68,7 @@ export function Exam() {
       </Card>
 
       <MiaSays>
-        Tips: read the LAST line of the question first ("What should the RBT do FIRST?"). Cross out answers where the RBT changes the plan or acts outside her role. Flag hard ones and come back! 🚩
+        Tips: read the LAST line of the question first ("What should the RBT do FIRST?"). Cross out answers where the RBT changes the plan or acts outside her role. Flag hard ones and come back!
       </MiaSays>
 
       {s.exams.length > 0 && (
@@ -79,7 +80,7 @@ export function Exam() {
           <div className="space-y-2">
             {[...s.exams].reverse().slice(0, 8).map((e, i) => (
               <div key={i} className="flex items-center gap-3 rounded-2xl bg-white/50 p-3 dark:bg-white/5">
-                <span className={cx('grid h-10 w-10 place-items-center rounded-xl text-lg', e.passed ? 'bg-emerald-500/15' : 'bg-rose-500/10')}>{e.passed ? '🏆' : '📘'}</span>
+                <span className={cx('grid h-10 w-12 place-items-center rounded-xl text-xs font-bold', e.passed ? 'bg-emerald-500/15' : 'bg-rose-500/10')}>{e.passed ? 'Pass' : 'Try'}</span>
                 <span className="flex-1 text-sm">
                   <span className="block font-semibold text-slate-800 dark:text-slate-100">{e.pct}% {e.passed ? '· Pass' : '· Keep going'}</span>
                   <span className="text-slate-400">
@@ -134,6 +135,8 @@ function finishExam(n) {
   const result = { date: Date.now(), pct, correct, total, byDomain, passed: pct >= PASS_TARGET, minutes };
   n.exams = [...n.exams, result].slice(-50);
   n.lastExam = { ...result, items: ex.items, answers: ex.answers, pilot: ex.pilot };
+  addXP(n, XP.exam);
+  markStudy(n);
   n.exam = null;
 }
 
@@ -245,7 +248,7 @@ export function ExamRunner() {
                 className={cx(
                   'h-10 rounded-lg text-sm font-semibold transition active:scale-95',
                   ex.flags[x.id] ? 'bg-amber-400 text-white' : ex.answers[x.id] !== undefined ? 'bg-brand-600 text-white' : 'bg-brand-600/10 text-slate-600 dark:text-slate-300',
-                  i === idx && 'ring-2 ring-fuchsia-400 ring-offset-2 ring-offset-transparent'
+                  i === idx && 'ring-2 ring-accent ring-offset-2 ring-offset-transparent'
                 )}
               >
                 {i + 1}
@@ -276,31 +279,11 @@ export function ExamRunner() {
   );
 }
 
-function Modal({ title, onClose, children }) {
-  useEffect(() => {
-    const k = (e) => e.key === 'Escape' && onClose();
-    window.addEventListener('keydown', k);
-    return () => window.removeEventListener('keydown', k);
-  }, [onClose]);
-  return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-900/40 p-3 backdrop-blur-sm sm:items-center" onClick={onClose} role="dialog" aria-modal="true" aria-label={title}>
-      <div className="glass-strong w-full max-w-lg animate-pop rounded-3xl p-5 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-display text-lg font-bold text-slate-900 dark:text-white">{title}</h2>
-          <button onClick={onClose} aria-label="Close" className="grid h-10 w-10 place-items-center rounded-xl text-slate-500 hover:bg-black/5 dark:hover:bg-white/10">
-            <X size={20} />
-          </button>
-        </div>
-        {children}
-      </div>
-    </div>
-  );
-}
-
 export function ExamResults() {
   const { s } = useStore();
   const r = s.lastExam;
   const [filter, setFilter] = useState('wrong');
+  const [dom, setDom] = useState('all');
   useEffect(() => {
     if (r?.passed && Date.now() - r.date < 10000) celebrate(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -309,8 +292,8 @@ export function ExamResults() {
     if (!r) return [];
     return r.items
       .map((it, i) => ({ ...QUESTION[it.id], order: it.order, n: i + 1, chosen: r.answers[it.id] }))
-      .filter((q) => (filter === 'wrong' ? q.chosen !== q.a : true));
-  }, [r, filter]);
+      .filter((q) => (filter === 'wrong' ? q.chosen !== q.a : true) && (dom === 'all' || q.d === dom));
+  }, [r, filter, dom]);
 
   if (!r) {
     return (
@@ -329,7 +312,7 @@ export function ExamResults() {
       <Card className="flex flex-col items-center text-center">
         {r.passed && <Elephant size={100} balloon className="mb-2 animate-float" />}
         <span className={cx('mb-3 rounded-full px-4 py-1.5 text-sm font-bold', r.passed ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-300' : 'bg-amber-500/15 text-amber-700 dark:text-amber-300')}>
-          {r.passed ? '✅ Likely PASS' : '📘 Not yet, keep studying'}
+          {r.passed ? 'Likely PASS' : 'Not yet, keep studying'}
         </span>
         <Ring value={r.pct} size={170} stroke={15}>
           <div>
@@ -340,7 +323,7 @@ export function ExamResults() {
           </div>
         </Ring>
         <p className="mt-4 max-w-md font-display text-xl font-semibold text-slate-900 dark:text-white">
-          {r.passed ? 'You did it, Andrea! You\'re ready for the real thing! 🏆' : `So close! Target is ${PASS_TARGET}%. Focus on ${weakest.d.name}.`}
+          {r.passed ? 'You did it, Andrea! You\'re ready for the real thing!' : `So close! Target is ${PASS_TARGET}%. Focus on ${weakest.d.name}.`}
         </p>
         <p className="mt-1 text-sm text-slate-400">
           Finished in {r.minutes} min · 10 pilot questions were not scored
@@ -362,7 +345,7 @@ export function ExamResults() {
               <div key={d.id}>
                 <div className="mb-1.5 flex justify-between text-sm">
                   <span className="font-semibold text-slate-700 dark:text-slate-200">
-                    {d.emoji} {d.id}. {d.name}
+                    {d.id}. {d.name}
                   </span>
                   <span className={cx('font-bold', p >= PASS_TARGET ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-white')}>
                     {x.c}/{x.t} · {p}%
@@ -386,6 +369,13 @@ export function ExamResults() {
             ))}
           </div>
         </div>
+        <div className="no-scrollbar -mx-4 mb-3 flex gap-2 overflow-x-auto px-4">
+          {['all', ...DOMAINS.map((d) => d.id)].map((x) => (
+            <button key={x} onClick={() => setDom(x)} className={cx('h-9 shrink-0 rounded-xl px-3 text-sm font-semibold', dom === x ? 'bg-brand-600 text-white' : 'glass text-slate-600 dark:text-slate-300')}>
+              {x === 'all' ? 'All topics' : `${x} · ${DOMAIN[x].short}`}
+            </button>
+          ))}
+        </div>
         <div className="space-y-4">
           {review.map((q) => (
             <Card key={q.id}>
@@ -400,7 +390,7 @@ export function ExamResults() {
               <OptionList q={q} chosen={q.chosen} reveal />
             </Card>
           ))}
-          {review.length === 0 && <Card className="text-center text-slate-500">No missed questions. Perfect! 🌟</Card>}
+          {review.length === 0 && <Card className="text-center text-slate-500">No missed questions. Perfect!</Card>}
         </div>
       </div>
     </div>
