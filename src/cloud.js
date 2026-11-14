@@ -1,21 +1,25 @@
 // Cloud save with Firebase (Auth + Firestore), using the REST APIs so the app stays light.
-// Andrea signs in with her name + PIN (turned into a Firebase email/password account).
-// Firestore rules only let each account read and write its own document.
+// The app is for one person (Andrea), so it signs in automatically to her account:
+// open the app on any device and it continues where she left off. Nothing to fill in.
+// Firestore rules only let that account read and write its own document.
 //
-// Firebase web config is public by design: security comes from the rules in firestore.rules.
+// Test mode: open the site with ?test=1 and nothing is saved to Andrea's cloud.
 const FB = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY || 'AIzaSyCDR15iUMYpraAxUmC-kQ3SdSWI0Ylt1Oo',
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || 'andrea-rbt-2026',
 };
-export const cloudEnabled = Boolean(FB.apiKey && FB.projectId);
+export const testMode = typeof window !== 'undefined' && /[?&]test(=|&|$)/.test(window.location.search);
+export const cloudEnabled = Boolean(FB.apiKey && FB.projectId) && !testMode;
 
 const LINK = 'andrea-rbt-cloud';
+const ANDREA = { profile: 'andrea', pin: 'andrea-2026-elefante' };
 
 export function getLink() {
+  if (!cloudEnabled) return null;
   try {
-    return JSON.parse(localStorage.getItem(LINK) || 'null');
+    return JSON.parse(localStorage.getItem(LINK) || 'null') || ANDREA;
   } catch {
-    return null;
+    return ANDREA;
   }
 }
 

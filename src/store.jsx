@@ -3,9 +3,10 @@ import { DOMAINS } from './data/domains.js';
 import { QUESTIONS, questionsByDomain } from './data/content.js';
 import { LESSONS } from './data/lessons.js';
 import { levelInfo, setMuted } from './fun.js';
-import { cloudEnabled, getLink, setLink, cloudLoad, cloudSave, normalizeProfile } from './cloud.js';
+import { cloudEnabled, testMode, getLink, setLink, cloudLoad, cloudSave, normalizeProfile } from './cloud.js';
 
-const KEY = 'andrea-rbt-v1'; // same key as v1, so old progress is kept
+// Test mode (?test=1) uses its own memory, so tests never touch Andrea's progress.
+const KEY = testMode ? 'andrea-rbt-test' : 'andrea-rbt-v1';
 
 export const todayKey = (d = new Date()) => {
   const y = d.getFullYear();
@@ -78,7 +79,7 @@ const FRESH_START = '2026-11-14';
 
 function load() {
   try {
-    if (localStorage.getItem('andrea-rbt-fresh') !== FRESH_START) {
+    if (!testMode && localStorage.getItem('andrea-rbt-fresh') !== FRESH_START) {
       localStorage.removeItem(KEY);
       localStorage.removeItem('andrea-rbt-cloud');
       localStorage.setItem('andrea-rbt-fresh', FRESH_START);
@@ -430,8 +431,8 @@ export const useStore = () => useContext(Ctx);
 
 export function resetAll() {
   try {
-    localStorage.removeItem(KEY);
-    localStorage.removeItem('andrea-rbt-cloud');
+    // A fresh, newer save: on reload it also replaces the copy in the cloud.
+    localStorage.setItem(KEY, JSON.stringify({ updatedAt: Date.now() }));
   } catch {
     /* ignore */
   }

@@ -269,92 +269,27 @@ export function Me() {
   );
 }
 
-const CLOUD_ERR = {
-  wrong_pin: 'Wrong PIN for this name. Try again.',
-  locked: 'Too many tries. Wait 15 minutes.',
-  offline: 'No internet right now. Your progress is safe on this phone.',
-  server: 'Could not reach the cloud. Try again in a minute.',
-};
-
 function CloudCard() {
-  const { s, cloud, linkCloud, unlinkCloud, syncNow } = useStore();
-  const [name, setName] = useState(s.name || 'Andrea');
-  const [pin, setPin] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [err, setErr] = useState('');
-
+  const { cloud } = useStore();
   if (!cloudEnabled) {
     return (
       <Card className="flex items-center gap-3 !p-4">
-        <Cloud className="shrink-0 text-slate-400" />
-        <p className="text-sm text-slate-500">Cloud save is coming soon. For now, your progress is saved on this device.</p>
+        <Cloud className="shrink-0 text-amber-500" />
+        <p className="text-sm text-slate-500">Test mode: progress is only kept on this device.</p>
       </Card>
     );
   }
-
-  if (cloud.status !== 'off' && cloud.profile) {
-    const label = cloud.status === 'saved' ? `Saved ${cloud.at ? new Date(cloud.at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : ''}` : cloud.status === 'syncing' ? 'Syncing...' : CLOUD_ERR[cloud.status] || 'Not saved yet';
-    return (
-      <Card className="!p-4">
-        <div className="flex items-center gap-3">
-          <span className={cx('grid h-10 w-10 shrink-0 place-items-center rounded-full', cloud.status === 'saved' ? 'bg-emerald-500/15 text-emerald-600' : 'bg-amber-500/15 text-amber-600')}>
-            <Cloud size={20} />
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="font-semibold text-slate-900 dark:text-white">Cloud save is on</p>
-            <p className="truncate text-sm text-slate-500">
-              {cloud.profile} · {label}
-            </p>
-          </div>
-        </div>
-        {cloud.restored && <p className="mt-2 text-sm font-medium text-emerald-600">Welcome back! Your progress was loaded.</p>}
-        <div className="mt-3 flex gap-2">
-          <Button size="sm" variant="soft" onClick={syncNow}>
-            Save now
-          </Button>
-          <Button size="sm" variant="ghost" onClick={unlinkCloud}>
-            Sign out
-          </Button>
-        </div>
-      </Card>
-    );
-  }
-
-  const submit = async (e) => {
-    e.preventDefault();
-    setBusy(true);
-    setErr('');
-    const res = await linkCloud(name, pin);
-    setBusy(false);
-    if (res !== true) setErr(CLOUD_ERR[res] || CLOUD_ERR.server);
-  };
-
+  const ok = cloud.status === 'saved';
+  const time = cloud.at ? new Date(cloud.at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : '';
   return (
-    <Card className="!p-4">
-      <div className="mb-3 flex items-center gap-3">
-        <Elephant size={56} />
-        <div>
-          <p className="font-display text-lg font-semibold text-slate-900 dark:text-white">Save my progress online</p>
-          <p className="text-sm text-slate-500">Use the same name and PIN on any phone or computer to continue right where you left off.</p>
-        </div>
+    <Card className="flex items-center gap-3 !p-4">
+      <span className={cx('grid h-10 w-10 shrink-0 place-items-center rounded-full', ok ? 'bg-emerald-500/15 text-emerald-600' : 'bg-brand-600/10 text-brand-600')}>
+        <Cloud size={20} />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="font-semibold text-slate-900 dark:text-white">Progress saved automatically</p>
+        <p className="text-sm text-slate-500">{ok ? `Last saved ${time}. Open the app on any device to continue.` : cloud.status === 'offline' ? 'No internet. It will save when you are back online.' : 'Saving...'}</p>
       </div>
-      <form onSubmit={submit} className="space-y-2">
-        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" autoComplete="username" className="h-12 w-full rounded-2xl border border-black/5 bg-white/80 px-4 outline-none focus:border-brand-400 dark:border-white/10 dark:bg-white/10" />
-        <input
-          value={pin}
-          onChange={(e) => setPin(e.target.value.replace(/\D/g, '').slice(0, 8))}
-          placeholder="PIN (4 to 8 numbers)"
-          inputMode="numeric"
-          type="password"
-          autoComplete="current-password"
-          className="h-12 w-full rounded-2xl border border-black/5 bg-white/80 px-4 tracking-widest outline-none focus:border-brand-400 dark:border-white/10 dark:bg-white/10"
-        />
-        {err && <p className="text-sm text-rose-500">{err}</p>}
-        <Button type="submit" className="w-full" disabled={busy || name.trim().length < 2 || pin.length < 4}>
-          {busy ? 'Connecting...' : 'Save and sync'}
-        </Button>
-        <p className="text-xs text-slate-400">First time? This creates your save. Remember your PIN!</p>
-      </form>
     </Card>
   );
 }
