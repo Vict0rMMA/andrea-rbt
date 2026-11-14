@@ -57,6 +57,7 @@ const DEFAULT = {
   pomos: [], // { date, min }
   bosses: {}, // domain -> date beaten
   games: {}, // gameId -> best score
+  chat: [], // chat with Mia
   updatedAt: 0,
   // transient (not saved)
   newBadges: [],

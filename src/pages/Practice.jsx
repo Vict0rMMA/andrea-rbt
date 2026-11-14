@@ -46,6 +46,7 @@ function PracticeHub() {
     <div className="space-y-3">
       <PageTitle title="Practice" sub="Pick one. Short and sweet." />
       <Row big title="10 mixed questions" sub="All topics mixed, like the real exam" onClick={() => go('quiz/mixed')} />
+      <Row big title="Chat with Mia" sub="Ask any question. She answers simply." onClick={() => go('chat')} />
       <Row title="Quiz by topic" sub="10 questions from one domain" onClick={() => go('practice/quizzes')} />
       <Row title="Flashcards" sub={`${due} cards ready to review`} onClick={() => go('practice/flashcards')} />
       <Row title="Games" sub="Learn while you play" onClick={() => go('games')} />

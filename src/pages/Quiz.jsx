@@ -244,6 +244,14 @@ export default function QuizRunner({ mode }) {
             </div>
             {conf === 1 && <p className="mt-2 text-xs text-slate-500">Saved to review soon.</p>}
           </div>
+          <button
+            onClick={() =>
+              go(`chat?q=${encodeURIComponent(`I got this question: "${q.q}" The correct answer is "${q.o[q.a]}". I chose "${q.o[chosen]}". Can you explain it simply?`)}`)
+            }
+            className="w-full text-center text-sm font-semibold text-brand-600 underline-offset-4 hover:underline dark:text-violet-300"
+          >
+            Still confused? Ask Mia about this question
+          </button>
           <div className="sticky bottom-24 z-10 flex gap-2 md:bottom-4">
             <ListenButton text={`${q.q} The correct answer is: ${q.o[q.a]}. ${q.w[q.a]}`} label="Hear why" size="md" />
             <Button onClick={next} className="flex-1" size="md">

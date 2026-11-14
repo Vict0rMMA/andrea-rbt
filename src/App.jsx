@@ -23,6 +23,7 @@ const ExamResults = lazy(() => import('./pages/Exam.jsx').then((m) => ({ default
 const RoadMap = lazy(() => import('./pages/Extra.jsx').then((m) => ({ default: m.RoadMap })));
 const DaySummary = lazy(() => import('./pages/Extra.jsx').then((m) => ({ default: m.DaySummary })));
 const Report = lazy(() => import('./pages/Extra.jsx').then((m) => ({ default: m.Report })));
+const Chat = lazy(() => import('./pages/Chat.jsx'));
 const Badges = lazy(() => import('./pages/Extra.jsx').then((m) => ({ default: m.Badges })));
 
 // Tiny hash router: #/learn/A?l=A-opdef
@@ -45,7 +46,7 @@ const TABS = [
   { id: 'home', label: 'Home', Icon: HomeIcon, match: ['home', 'map', 'summary'] },
   { id: 'learn', label: 'Learn', Icon: BookOpen, match: ['learn', 'cheatsheet', 'glossary'] },
   { id: 'watch', label: 'Watch', Icon: PlayCircle, match: ['watch'] },
-  { id: 'practice', label: 'Practice', Icon: Layers, match: ['practice', 'flash', 'quiz', 'games', 'game', 'exam'] },
+  { id: 'practice', label: 'Practice', Icon: Layers, match: ['practice', 'flash', 'quiz', 'games', 'game', 'exam', 'chat'] },
   { id: 'me', label: 'Me', Icon: User, match: ['me', 'notes', 'badges', 'report'] },
 ];
 
@@ -72,6 +73,8 @@ function Screen({ route }) {
       return <FlashSession deck={b || 'all'} query={query} key={route} />;
     case 'quiz':
       return <QuizRunner mode={b} key={route} />;
+    case 'chat':
+      return <Chat query={query} key={route} />;
     case 'games':
       return <GamesHub />;
     case 'game':
