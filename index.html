@@ -14,11 +14,34 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap" rel="stylesheet" />
+    <!-- Fonts load without blocking the first paint -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&display=swap" media="print" onload="this.media='all'" />
     <title>Andrea RBT</title>
+    <style>
+      /* Splash shown instantly while the app loads (React replaces it) */
+      html, body { margin: 0; background: #FBF7FF; }
+      @media (prefers-color-scheme: dark) { html, body { background: #120A22; } }
+      .splash { min-height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; font-family: system-ui, -apple-system, sans-serif; color: #7C3AED; }
+      .splash svg { animation: sp-float 1.6s ease-in-out infinite; }
+      .splash p { margin: 0; font-weight: 600; font-size: 15px; letter-spacing: .02em; }
+      @keyframes sp-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="splash">
+        <svg width="96" height="96" viewBox="0 0 80 80" aria-hidden="true">
+          <circle cx="40" cy="40" r="40" fill="#FCE7F3" />
+          <ellipse cx="15" cy="40" rx="14" ry="18" fill="#F472B6" /><ellipse cx="17" cy="40" rx="8.5" ry="12" fill="#FBCFE8" />
+          <ellipse cx="65" cy="40" rx="14" ry="18" fill="#F472B6" /><ellipse cx="63" cy="40" rx="8.5" ry="12" fill="#FBCFE8" />
+          <circle cx="40" cy="38" r="21" fill="#F9A8D4" />
+          <path d="M40 46c0 9 1 15 7 17 4 1 6-2 5-4" stroke="#F9A8D4" stroke-width="9" fill="none" stroke-linecap="round" />
+          <ellipse cx="32" cy="36" rx="2.8" ry="3.4" fill="#3B0764" /><ellipse cx="48" cy="36" rx="2.8" ry="3.4" fill="#3B0764" />
+          <path d="M44 18l-7-5v10zM44 18l7-5v10z" fill="#8B5CF6" />
+        </svg>
+        <p>Loading...</p>
+      </div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
