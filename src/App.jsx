@@ -8,6 +8,7 @@ import { Learn, LessonViewer, CheatSheet, Glossary } from './pages/Learn.jsx';
 import { Practice, FlashSession } from './pages/Practice.jsx';
 import QuizRunner from './pages/Quiz.jsx';
 import { Me, Notes, Avatar } from './pages/Me.jsx';
+import CallBreak from './components/CallBreak.jsx';
 
 // Heavy screens load only when opened (faster on phones).
 const Watch = lazy(() => import('./pages/Watch.jsx').then((m) => ({ default: m.Watch })));
@@ -142,6 +143,7 @@ export default function App() {
         <span />
       </div>
       <BadgeToast />
+      <CallBreak />
 
       {!focusMode && (
         <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col p-5 md:flex">
