@@ -61,9 +61,9 @@ export default function CallBreak() {
       <div className="relative inline-block animate-pop overflow-hidden rounded-[32px] shadow-2xl">
         <img src="/call-surprise.jpg" alt="¡Wow, ya llevas muchísimo tiempo aquí! ¡Llama a tu novio! Él te extraña un montón" className="block max-h-[80dvh] w-auto max-w-full" />
         {href ? (
-          <a href={href} target="_blank" rel="noreferrer" onClick={close} aria-label="Llamar al novio ahora" className="absolute left-[4%] right-[4%] top-[86%] h-[8%] animate-pulse rounded-full ring-4 ring-white/0 transition active:scale-95" />
+          <a href={href} target="_blank" rel="noreferrer" onClick={close} aria-label="Llamar al novio ahora" className="absolute left-[5%] right-[5%] top-[84%] h-[14%] animate-pulse rounded-full ring-4 ring-white/0 transition active:scale-95" />
         ) : (
-          <button onClick={close} aria-label="Cerrar" className="absolute left-[4%] right-[4%] top-[86%] h-[8%] rounded-full" />
+          <button onClick={close} aria-label="Cerrar" className="absolute left-[5%] right-[5%] top-[84%] h-[14%] rounded-full" />
         )}
       </div>
       <button onClick={close} className="h-10 rounded-full px-5 text-sm font-semibold text-white/90 hover:bg-white/10">
